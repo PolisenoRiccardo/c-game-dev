@@ -22,36 +22,61 @@ int main(void) {
     return -1;
   }
 
-//  SDL_Renderer *renderer = SDL_CreateRenderer(finestra, -1, SDL_RENDERER_SOFTWARE);
+  int window_w, window_h;
+  SDL_GetWindowSize(finestra, &window_w, &window_h);
 
-  SDL_Event event; 
-/*
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-      case SDL_MOUSEMOTION:       
-        SDL_Log("We got a motion event.");
-        SDL_Log("Current mouse position is: (%d, %d)", event.motion.x, event.motion.y);
-        break;
-      case SDL_KEYDOWN:
-        SDL_Log("TASTIERA PREMUTA");
-        SDL_Log("HA PREMUTO IL TASTO: %d", event.key.keysym.scancode);
-      default:
-        SDL_Log("Unhandled Event!");
-        break;
+  SDL_Renderer *renderer = SDL_CreateRenderer(finestra, -1, SDL_RENDERER_ACCELERATED);
+  
+  SDL_Rect paddle = {(window_w/2)-75, (window_h/2)-30, 150, 60};
+
+  SDL_Event event;
+  
+  const Uint8* keys = SDL_GetKeyboardState(NULL);
+
+  int debug = 0;
+
+  while (1) {
+
+    // definisce il colore da disegnare, l'ultimo argomento è l'alpha
+    SDL_SetRenderDrawColor(renderer, 40, 0, 40, 255);
+    // riempe la schermata con il colore settato
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &paddle);
+
+    SDL_RenderPresent(renderer);
+
+    if (keys[SDL_SCANCODE_RIGHT]) {
+      paddle.x += 3;
     }
-    SDL_Log("Event queue empty.");
-  }
- */
+    if (keys[SDL_SCANCODE_LEFT]) {
+      paddle.x -= 3;
+    }
+    if (keys[SDL_SCANCODE_UP]) {
+      paddle.y -= 3;
+    }
+    if (keys[SDL_SCANCODE_DOWN]) {
+      paddle.y += 3;
+    }
 
-  while (1) {  
-    if (SDL_PollEvent(&event)) {
-      SDL_Log("%x", event.type);
+    while (SDL_PollEvent(&event)) {
       if (event.type == SDL_KEYDOWN) {
-        if (event.key.keysym.scancode == SDL_SCANCODE_X) {
+        SDL_Log("Keydown %d", debug);
+        switch(event.key.keysym.scancode) {
+          case SDL_SCANCODE_X:
+            printf("Chiudo!\n");
+            SDL_DestroyWindow(finestra);
+            SDL_Quit();
+            return 0;
+          default:
             break;
-        }
+        } 
       }  
     }
+    
+    SDL_Delay(16);
+    debug++;
   }
 
   printf("Chiudo!\n");
