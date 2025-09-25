@@ -2,7 +2,7 @@
 TARGET = game
 
 # File sorgenti (per ora solo uno)
-SOURCES = main.c
+SOURCES = pong.c
 
 # Librerie SDL2 necessarie
 LIBS = -lSDL2 -lSDL2main -lm
