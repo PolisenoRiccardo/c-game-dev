@@ -46,26 +46,28 @@ int main(void) {
     SDL_RenderFillRect(renderer, &paddle);
 
     SDL_RenderPresent(renderer);
+    
+    int speed = 6;
 
     if (keys[SDL_SCANCODE_RIGHT]) {
-      paddle.x += 3;
+      if (paddle.x + paddle.w <= window_w) paddle.x += speed;
     }
     if (keys[SDL_SCANCODE_LEFT]) {
-      paddle.x -= 3;
+      if (paddle.x - speed > 0) {paddle.x -= speed;}
+      else paddle.x = 0;
     }
     if (keys[SDL_SCANCODE_UP]) {
-      paddle.y -= 3;
+      if (paddle.y - speed > 0) {paddle.y -= speed;}
+      else paddle.y = 0;
     }
     if (keys[SDL_SCANCODE_DOWN]) {
-      paddle.y += 3;
+      if (paddle.y + paddle.h <= window_h) paddle.y += speed;
     }
 
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_KEYDOWN) {
-        SDL_Log("Keydown %d", debug);
         switch(event.key.keysym.scancode) {
           case SDL_SCANCODE_X:
-            printf("Chiudo!\n");
             SDL_DestroyWindow(finestra);
             SDL_Quit();
             return 0;
