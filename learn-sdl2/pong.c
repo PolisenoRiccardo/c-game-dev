@@ -28,51 +28,51 @@ int main(void) {
   int window_w, window_h;
   SDL_GetWindowSize(finestra, &window_w, &window_h);
 
+  int upscale_num = 2;
+
   SDL_Renderer *renderer = SDL_CreateRenderer(finestra, -1, SDL_RENDERER_ACCELERATED);
   
-  SDL_Rect paddle = {(window_w/2)-PADDLE_W/2, window_h-PADDLE_H - 100, PADDLE_W, PADDLE_H};
+  SDL_Rect paddle = {(window_w/2)-PADDLE_W*upscale_num/2, window_h-PADDLE_H*upscale_num, PADDLE_W*upscale_num, PADDLE_H*upscale_num};
 
-  SDL_Rect ball = {window_w/2, window_h/2, 20, 20};
+  SDL_Rect ball = {window_w/2, window_h/2, 20*upscale_num, 20*upscale_num};
 
   SDL_Event event;
   
   const Uint8* keys = SDL_GetKeyboardState(NULL);
 
-  int debug = 0;
 
-  int paddle_speed = 6;
+  float paddle_speed = 300.0f;
+  float ball_speed = 200.0f;
+
+  float ball_x = window_w/2.0f;
+  float ball_y = window_h/2.0f;
+
+  float paddle_x = paddle.x;
+  float paddle_y = paddle.y;
 
   #define DIRECTION_UP 0
   #define DIRECTION_DOWN 1
 
   int direction = DIRECTION_DOWN;
-  int ball_speed = 4;
+  
+  Uint32 last_time = SDL_GetTicks();
+  float delta_time = 0.0f;
 
   while (1) {
 
-    // definisce il colore da disegnare, l'ultimo argomento è l'alpha
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    // riempe la schermata con il colore settato
-    SDL_RenderClear(renderer);
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawRect(renderer, &paddle);
-   
-    // ball render
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &ball);
-
-    SDL_RenderPresent(renderer);
-
-
+    Uint32 current_time = SDL_GetTicks();
+    delta_time = (current_time - last_time) / 1000.0f;  // converti in secondi
+    last_time = current_time;
    
     if (keys[SDL_SCANCODE_RIGHT]) {
-      if (paddle.x + paddle.w < window_w) paddle.x += paddle_speed;
-      else paddle.x = window_w - paddle.w;
+      if (paddle_x + paddle.w < window_w)
+        paddle_x += (paddle_speed * delta_time);
+      else paddle_x = window_w - paddle.w;
     }
     if (keys[SDL_SCANCODE_LEFT]) {
-      if (paddle.x - paddle_speed > 0) {paddle.x -= paddle_speed;}
-      else paddle.x = 0; 
+      if (paddle_x - (paddle_speed * delta_time) > 0) 
+        paddle_x -= (paddle_speed * delta_time);
+      else paddle_x = 0; 
     }
   
     while (SDL_PollEvent(&event)) {
@@ -94,18 +94,38 @@ int main(void) {
     } 
 
     // ball update
-    SDL_Log("%d", SDL_HasIntersection(&ball, &paddle));
     if (direction == DIRECTION_DOWN) {
-      if (ball.y + ball.h < window_h && !(SDL_HasIntersection(&(SDL_Rect){ball.x, ball.y, ball.w, ball.h}, &paddle))) {ball.y += ball_speed;}
+      if (ball.y + ball.h < window_h &&
+          !(SDL_HasIntersection(&ball, &paddle))) 
+      {
+        ball_y += ball_speed * delta_time;
+      }
       else direction = DIRECTION_UP;
     }
     if (direction == DIRECTION_UP) {
-      if (ball.y > 0) {ball.y -= ball_speed;}
+      if (ball.y > 0) 
+      {
+        ball_y -= ball_speed * delta_time;
+      }
       else direction = DIRECTION_DOWN;
     }
 
-    SDL_Delay(16);
-    debug++;
+    paddle.x = (int)paddle_x;
+    ball.y = (int)ball_y;
+
+    // definisce il colore da disegnare, l'ultimo argomento è l'alpha
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    // riempe la schermata con il colore settato
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawRect(renderer, &paddle);
+   
+    // ball render
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &ball);
+
+    SDL_RenderPresent(renderer);
   }
 
   printf("Chiudo!\n");
